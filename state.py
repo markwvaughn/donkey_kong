@@ -81,7 +81,7 @@ class StateIntro(State):
 		pass
 
 	def enter(self, sm):
-		pass
+		menu_music.play(-1)
 
 	def update(self, sm):
 
@@ -162,9 +162,6 @@ class StateMenu(State):
 		intro_scores = Score()
 
 		timer = Timer(pygame.time.get_ticks())
-
-		# menu_music.play(-1,0.0)
-
 		while 1:
 			
 			# Exit if window is closed
@@ -250,6 +247,8 @@ class StateLevelOne(State):
 		_ , globals.highscore = game_score.getHighScore()
 		
 		mario.reset()
+		menu_music.stop()
+		level_one_music.play(-1)
 
 		regular_barrels.reset(1)
 		blue_barrels.reset(1)
@@ -266,6 +265,8 @@ class StateLevelOne(State):
 
 		clock_time = 0
 		insert_flag = 0
+		playing_hammer_music = 0
+		playing_walking_sound = 0
 
 		while 1:
 			
@@ -277,6 +278,8 @@ class StateLevelOne(State):
 			# Goto Menu if esc pressed
 			key = pygame.key.get_pressed()
 			if key[pygame.K_ESCAPE]:
+				menu_music.play(-1)
+				level_one_music.stop()
 				sm.changeState(StateMenu())
 				break
 
@@ -335,8 +338,25 @@ class StateLevelOne(State):
 			reset1 = mario.barrelCollision(regular_barrels.barrels)
 			reset2 = mario.barrelCollision(blue_barrels.barrels)
 
+			if reset1 or reset2:
+				mario_die_music.play()
+				level_one_music.stop()
+				pygame.time.delay(3000)
+				level_one_music.play(-1)
+
+
 			mario.hammerCollision(hammer1)
 			mario.hammerCollision(hammer2)
+
+			if mario.animation == globals.mario_with_hammer_right_an or \
+			   mario.animation == globals.mario_with_hammer_left_an:
+				
+			   if playing_hammer_music == 0:
+					mario_hammer_music.play(-1)
+					playing_hammer_music = 1
+			else:
+				mario_hammer_music.stop()
+				playing_hammer_music = 0
 
 			levelOne.destroy_platform(timer.dt)
 
@@ -391,6 +411,8 @@ class StateLevelOne(State):
 			blue_barrels.draw(surface)
 
 			if win == True:
+				level_one_music.stop()
+				win_music.play()
 				game_over_win_title = pixel_font80.render("You Won", 1, (50,230,50))
 				surface.blit(game_over_win_title, (135, 80))
 				pygame.display.flip()
@@ -398,6 +420,8 @@ class StateLevelOne(State):
 				return
 
 			if globals.mario_num_lives <= 0:
+				level_one_music.stop()
+				game_over_music.play()
 				game_over_lose_title = pixel_font80.render("Game Over", 1, (50,50,230))
 				surface.blit(game_over_lose_title, (100, 80))
 				pygame.display.flip()
@@ -405,6 +429,7 @@ class StateLevelOne(State):
 				for i in range(1000):
 					pygame.time.delay(5)
 				
+				menu_music.play(-1)
 				sm.changeState(StateMenu())
 				return
 
@@ -562,7 +587,6 @@ class EnterHighScoreMenu(State):
 	def update(self, sm):
 
 		name_string = ""
-
 		time = 0
 
 		while 1:
@@ -575,6 +599,7 @@ class EnterHighScoreMenu(State):
 				if event.type == pygame.KEYUP:
 
 					if pygame.key.name(event.key) == "return" and len(name_string) > 0:
+						menu_music.play(-1) 
 						sm.changeState(StateMenu())
 						game_score.addScore(name_string, globals.score + globals.time_bonus)
 						game_score.saveScores()
@@ -596,7 +621,6 @@ class EnterHighScoreMenu(State):
 							name_string += " "
 
 			# ENTER NAME
-
 			pygame.draw.rect(surface, (0,0,0), pygame.Rect(globals.WIDTH/2 - (250/2.0), globals.HEIGHT/2 - 100, 250, 100))
 
 			pygame.draw.rect(surface, (230,50,50), pygame.Rect(globals.WIDTH/2 - (250/2.0) + 25/2.0, globals.HEIGHT/2 - 50, 225, 40), 2)
@@ -630,9 +654,10 @@ class ViewHighScoreMenu(State):
 		pass
 
 	def update(self, sm):
-
-		high_scores = Score()
 		timer = Timer(pygame.time.get_ticks())
+		score_index = 0
+		left_end = 1
+		right_end = 0
 
 		while 1:
 			
@@ -647,15 +672,53 @@ class ViewHighScoreMenu(State):
 						sm.changeState(StateMenu())
 						return
 
+					if pygame.key.name(event.key) == "right":
+						if score_index + 5 < len(globals.game_score.highscores):
+							score_index += 5
+
+					if pygame.key.name(event.key) == "left":
+						score_index -= 5
+						if score_index <= 0:
+							score_index = 0
+
 			timer.update(pygame.time.get_ticks())
+
+			if score_index <= 0:
+				left_end = 1
+			else:
+				left_end = 0
+
+			if score_index >= len(globals.game_score.highscores) - 5:
+				right_end = 1
+			else:
+				right_end = 0
+
 
 			# ENTER NAME
 			surface.fill(BLACK)
 
-			high_score_title = pixel_font80.render("High Scores", 1, (230,50,50))
-			surface.blit(high_score_title, (globals.WIDTH/2 - 135, 90))
+			high_score_title = pixel_font80.render("High Score", 1, (230,50,50))
+			width = high_score_title.get_bounding_rect()[2]
+			surface.blit(high_score_title, (globals.WIDTH/2.0 - (width / 2.0), 90))
 			
-			high_scores.displayScores(surface, timer.dt)
+			if left_end == 0:
+				left_arrow = pixel_font80.render("<", 1, (255,255,255))
+			else:
+				left_arrow = pixel_font80.render("*", 1, (255,255,255))
+
+			width = left_arrow.get_bounding_rect()[2]
+			surface.blit(left_arrow, (globals.WIDTH*0.2 - (width / 2.0), 300))
+
+
+			if right_end == 0:
+				right_arrow = pixel_font80.render(">", 1, (255,255,255))
+			else:
+				right_arrow = pixel_font80.render("*", 1, (255,255,255))
+
+			width = right_arrow.get_bounding_rect()[2]
+			surface.blit(right_arrow, (globals.WIDTH*0.8 - (width / 2.0), 300))
+
+			game_score.displayAllScores(surface, timer.dt, score_index)
 			pygame.display.flip()
 
 	def exit(self):

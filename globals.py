@@ -76,8 +76,18 @@ menuPointerRect = menuPointer.get_rect()
 #########################################################################################
 #sounds
 #########################################################################################
-menu_music = pygame.mixer.music
-menu_music.load("sounds/dkca.wav")
+menu_music = pygame.mixer.Sound("sounds/dkca.wav")
+level_one_start_music = pygame.mixer.Sound("sounds/dk-stagestart.wav")
+level_one_music = pygame.mixer.Sound("sounds/DKLevel1.wav")
+win_music = pygame.mixer.Sound("sounds/Donkey_Kong_Win.wav")
+game_over_music = pygame.mixer.Sound("sounds/Donkey_Kong_Falls.wav")
+
+mario_die_music = pygame.mixer.Sound("sounds/mario_die.wav")
+mario_hammer_music = pygame.mixer.Sound("sounds/dk-hammer2.wav")
+mario_jump_music = pygame.mixer.Sound("sounds/jump.wav")
+mario_jump_bar_music = pygame.mixer.Sound("sounds/jump_bar.wav")
+mario_walk_music = pygame.mixer.Sound("sounds/walking.wav")
+
 
 #########################################################################################
 #sprites

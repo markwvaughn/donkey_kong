@@ -46,20 +46,19 @@ class Score():
 		for i in range(len(self.highscores)):
 			j = i
 			for j in range(len(self.highscores)):
-				if int(self.highscores[i][1]) < int(self.highscores[j][1]):
+				if int(self.highscores[i][1]) > int(self.highscores[j][1]):
 					t = copy.deepcopy(self.highscores[i])
 					self.highscores[i] = self.highscores[j]
 					self.highscores[j] = t
 
-		for score in self.highscores[len(self.highscores)-1:len(self.highscores)-6:-1]:
+		for score in self.highscores:
 			score_text += "%s:%s\n" % (score[0], score[1])
 
 		scores_file.write(score_text)
 		scores_file.close()
 
 	def displayScores(self, surface, dt):
-
-		if self.current_slide >= len(self.highscores):
+		if self.current_slide >= 5:
 			self.current_slide = 0
 
 		self.slide_x -= 2.5
@@ -69,21 +68,26 @@ class Score():
 			self.current_slide += 1
 
 		i = 0
-		while i < len(self.highscores):
-
+		while i < 5:
 			if i == self.current_slide:
 				thescore = globals.pixel_font30.render("%s %s" % (self.highscores[i][0], self.highscores[i][1]), 1, (230,50,50))
 				surface.blit(thescore, (self.slide_x, 10))
-			
 			i += 1
 
-	def displayAllScores(self, surface, dt):
-		x = 0
-		y = 0
+	def displayAllScores(self, surface, dt, score_index):
+		x = 100
+		y = 200
 		spacing = 0
-		for score in self.highscores:		
-			thescore = globals.pixel_font30.render("%s %s" % (score[0], score[1]), 1, (230,50,50))
-			surface.blit(thescore, (x, y))
-			
 
+		begin = score_index
+		end = score_index + 5
 
+		if end > len(self.highscores):
+			end = len(self.highscores)
+
+		while begin < end:		
+			thescore = globals.pixel_font30.render("%s %s" % (self.highscores[begin][0], self.highscores[begin][1]), 1, (230,50,50))
+			width = thescore.get_bounding_rect()[2]
+			surface.blit(thescore, (globals.WIDTH/2.0 - (width / 2.0), y + spacing))
+			spacing += 50
+			begin += 1

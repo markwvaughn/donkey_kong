@@ -138,7 +138,6 @@ class Mario():
 
 
 	def barrelCollision(self, barrels):
-		
 		x = self.pos.x
 		y = self.pos.y
 		w = self.animation._src.w
@@ -165,9 +164,6 @@ class Mario():
 				ydist = abs(cy - bcy)
 
 				if xdist < 10 and bcy - cy > 30 and bcy - cy < 50 and (self.actionstate == "jumping" or self.actionstate == "falling"):
-					
-					print bcy - cy
-
 					globals.score += 100
 					barrel.reset()
 					return 0
